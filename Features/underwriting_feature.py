@@ -1,5 +1,4 @@
-import re
-from locust import HttpUser, task, constant, SequentialTaskSet
+from locust import HttpUser, task, constant, SequentialTaskSet, events, LoadTestShape
 from utils.readtestdata import CsvRead
 from locust.exception import StopUser
 from fakes.customer import Customer
@@ -11,8 +10,6 @@ import random
 test_data = CsvRead("CSV_Data//registration.csv").read()
 
 class UnderWritingFlow(SequentialTaskSet):
-    from fakes.customer import Customer
-
     def __init__(self, parent):
         super().__init__(parent)
         self.token = ""
@@ -46,7 +43,6 @@ class UnderWritingFlow(SequentialTaskSet):
         }
 
         with self.client.post(endpoint, catch_response=True, name=name_thread, data=data) as response:
-            print(response.status_code)
             if response.status_code == 201:
                 response.success()
             else:
@@ -91,7 +87,6 @@ class UnderWritingFlow(SequentialTaskSet):
         }
 
         with self.client.post(endpoint, catch_response=True, name=name_thread, data=data) as response:
-            print(response)
             if response.status_code == 200:
                 response.success()
 
@@ -171,13 +166,13 @@ class UnderWritingFlow(SequentialTaskSet):
         ) as response:
             try:
                 success_response = response.json()["success"]
+                if response.status_code == 200 and success_response == True:
+                    response.success()
+                else:
+                    response.failure("Failure in get province")
 
             except AttributeError:
                 success_response = ""
-
-            if response.status_code == 200 and success_response == True:
-                response.success()
-            else:
                 response.failure("Failure in get province")
 
     @task
@@ -199,13 +194,13 @@ class UnderWritingFlow(SequentialTaskSet):
         ) as response:
             try:
                 success_response = response.json()["success"]
+                if response.status_code == 200 and success_response == True:
+                    response.success()
+                else:
+                    response.failure("Failure in get detail locations")
 
             except AttributeError:
                 success_response = ""
-
-            if response.status_code == 200 and success_response == True:
-                response.success()
-            else:
                 response.failure("Failure in get detail locations")
 
     @task
@@ -215,7 +210,7 @@ class UnderWritingFlow(SequentialTaskSet):
         name_thread = "SubmitForm - Check payslip mandatory - " + endpoint
 
         with self.client.get(
-            endpoint + self.application_id,
+            endpoint + str(self.application_id),
             catch_response=True,
             name=name_thread,
             headers={"authorization": "Token " + self.token}
@@ -223,12 +218,13 @@ class UnderWritingFlow(SequentialTaskSet):
             try:
                 success_response = response.json()["success"]
 
+                if response.status_code == 200 and success_response == True:
+                    response.success()
+                else:
+                    response.failure("Failure in get detail locations")
+
             except AttributeError:
                 success_response = ""
-
-            if response.status_code == 200 and success_response == True:
-                response.success()
-            else:
                 response.failure("Failure in get detail locations")
 
     @task
@@ -294,18 +290,33 @@ class UnderWritingFlow(SequentialTaskSet):
             else:
                 response.failure("Failure in get terms privacy")
 
+    @task
+    def stop(self):
+        raise exit()
+
     # @task
-    # def stop(self):
-    #     raise StopUser()
+    # def short_form_submission(self):
+    #     endpoint = "/api/application-form/v1/application/"
 
-    # def on_stop(self):
-    #     print("masuk akhir")
-    #     if len(test_data) > 0:
-    #         print("masuk akhir2")
+    #     name_thread = "Submit Form - Submission - " + endpoint
 
-    #         self.user.environment.reached_end = True
-    #         self.user.environment.runner.quit()
-    #     raise StopUser()
+    #     data = {
+    #         "phone": self.phone["phone_number"]
+    #     }
+
+    #     with self.client.patch(
+    #         endpoint + str(self.application_id),
+    #         catch_response=True, 
+    #         name=name_thread, 
+    #         data=data,
+    #         headers={"authorization": "Token " + self.token},
+    #     ) as response:
+    #         print("response form submission : {}".format(response.text))
+    #         if response.status_code == 200:
+    #             response.success()
+    #         else:
+    #             response.failure("Failure in process short form submission")
+
 
 class MySeqTest(HttpUser):
     wait_time = constant(1)
