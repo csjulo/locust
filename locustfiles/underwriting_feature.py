@@ -1,11 +1,11 @@
 from locust import HttpUser, task, constant, SequentialTaskSet, events, LoadTestShape
 from utils.readtestdata import CsvRead
 from locust.exception import StopUser
-from fakes.customer import Customer
-from fakes.device import Device
-from fakes.device import AppVersion
+from json import JSONDecodeError
 from fakes.constant import app_version, registration
 import random
+from locustfiles.example_spike_test import Example
+import logging
 
 test_data = CsvRead("CSV_Data//registration.csv").read()
 
@@ -22,18 +22,6 @@ class UnderWritingFlow(SequentialTaskSet):
             self.phone = test_data.pop()
 
     @task
-    def get_server_time(self):
-        endpoint = "/api/v3/servertime"
-
-        name_thread = "Registration - Get Server Time - " + endpoint
-
-        with self.client.get(endpoint, catch_response=True, name=name_thread) as response:
-            if response.status_code == 200:
-                response.success()
-            else:
-                response.failure("Failure in get server time")
-
-    @task
     def generate_customer(self):
         endpoint = "/api/registration-flow/v1/generate-customer/"
         name_thread = "Registration - Generate Customer - " + endpoint
@@ -43,7 +31,8 @@ class UnderWritingFlow(SequentialTaskSet):
         }
 
         with self.client.post(endpoint, catch_response=True, name=name_thread, data=data) as response:
-            if response.status_code == 201:
+            logging.info("Response : " + response.text)
+            if response.status_code == 201 and response.elapsed.total_seconds() < 1.5:
                 response.success()
             else:
                 response.failure("Failure in process generate customer")
@@ -97,9 +86,13 @@ class UnderWritingFlow(SequentialTaskSet):
                     application_id = response.json()["data"]["applications"][0]["id"]
                     self.application_id = application_id
 
-                except AttributeError:
+                except JSONDecodeError:
                     self.token = ""
                     self.application_id = ""
+                    response.failure("Response could not be decoded as JSON")
+                    
+                except KeyError:
+                    response.failure("Response did not contain expected key")
 
             else:
                 response.failure("Failure in process login")
@@ -171,9 +164,12 @@ class UnderWritingFlow(SequentialTaskSet):
                 else:
                     response.failure("Failure in get province")
 
-            except AttributeError:
+            except JSONDecodeError:
                 success_response = ""
-                response.failure("Failure in get province")
+                response.failure("Response could not be decoded as JSON")
+                
+            except KeyError:
+                response.failure("Response did not contain expected key")
 
     @task
     def get_detail_locations(self):
@@ -199,10 +195,13 @@ class UnderWritingFlow(SequentialTaskSet):
                 else:
                     response.failure("Failure in get detail locations")
 
-            except AttributeError:
+            except JSONDecodeError:
                 success_response = ""
-                response.failure("Failure in get detail locations")
-
+                response.failure("Response could not be decoded as JSON")
+                
+            except KeyError:
+                response.failure("Response did not contain expected key")
+                
     @task
     def check_payslip_mandatory(self):
         endpoint = "/api/v2/mobile/check-payslip-mandatory/"
@@ -215,6 +214,7 @@ class UnderWritingFlow(SequentialTaskSet):
             name=name_thread,
             headers={"authorization": "Token " + self.token}
         ) as response:
+            logging.info("Response check : " + response.text)
             try:
                 success_response = response.json()["success"]
 
@@ -223,9 +223,12 @@ class UnderWritingFlow(SequentialTaskSet):
                 else:
                     response.failure("Failure in get detail locations")
 
-            except AttributeError:
+            except JSONDecodeError:
                 success_response = ""
-                response.failure("Failure in get detail locations")
+                response.failure("Response could not be decoded as JSON")
+                
+            except KeyError:
+                response.failure("Response did not contain expected key")
 
     @task
     def upload_ktp(self):
@@ -278,22 +281,6 @@ class UnderWritingFlow(SequentialTaskSet):
             else:
                 response.failure("Failure in process upload selfie")
 
-    @task
-    def get_terms_privacy(self):
-        endpoint = "/api/v3/termsprivacy"
-
-        name_thread = "SubmitForm - Get Terms Privacy - " + endpoint
-
-        with self.client.get(endpoint, catch_response=True, name=name_thread) as response:
-            if response.status_code == 200:
-                response.success()
-            else:
-                response.failure("Failure in get terms privacy")
-
-    @task
-    def stop(self):
-        raise exit()
-
     # @task
     # def short_form_submission(self):
     #     endpoint = "/api/application-form/v1/application/"
@@ -317,6 +304,10 @@ class UnderWritingFlow(SequentialTaskSet):
     #         else:
     #             response.failure("Failure in process short form submission")
 
+    # @task
+    # def stop(self):
+    #     # raise exit()
+    #     raise StopUser()
 
 class MySeqTest(HttpUser):
     wait_time = constant(1)
