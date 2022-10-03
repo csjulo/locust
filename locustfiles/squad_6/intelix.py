@@ -7,21 +7,78 @@ from fakes.constant import app_version, registration
 from fakes.customer import Customer as customers
 
 # Get data parameterization from CSV
-test_data = CSVReader("CSV_Data//registration_long_form.csv")
+test_data = CSVReader("CSV_Data//intelix_data.csv")
 
-class OnboardingFeature(SequentialTaskSet):
+class IntelixFeature(SequentialTaskSet):
     def __init__(self, parent):
         super().__init__(parent)
-        self.token = ""
+        self.token = "5f2b5cdbe5194f10b3241568fe4e2b24"
+        self.loan_id = ""
+        self.payment_id = ""
+        self.account_id = ""
+        self.account_payment_id = ""
+        self.is_j1 = ""
+        self.customer_id = ""
         self.application_id = ""
-        self.nik = ""
-        self.email = ""
-        self.image_id = ""
-        self.province = ""
-        self.city = ""
-        self.district = ""
-        self.sub_district = ""
-        self.device_id = ""
+        self.nama_customer = ""
+        self.mobile_phone_1 = ""
+        self.mobile_phone_2 = ""
+        self.nama_perusahaan = ""
+        self.posisi_karyawan = ""
+        self.telp_perusahaan = ""
+        self.dpd = ""
+        self.angsuran_per_bulan = ""
+        self.denda = ""
+        self.outstanding = ""
+        self.tanggal_jatuh_tempo = ""
+        self.nama_pasangan = ""
+        self.no_telp_pasangan = ""
+        self.nama_kerabat = ""
+        self.no_telp_kerabat = ""
+        self.hubungan_kerabat = ""
+        self.alamat = ""
+        self.kota = ""
+        self.jenis_kelamin = ""
+        self.tgl_lahir = ""
+        self.tgl_gajian = ""
+        self.tujuan_pinjaman = ""
+        self.tgl_upload = ""
+        self.va_bca = ""
+        self.va_permata = ""
+        self.va_maybank = ""
+        self.va_alfamart = ""
+        self.va_indomaret = ""
+        self.campaign = ""
+        self.tipe_produk = ""
+        self.jumlah_pinjaman = ""
+        self.last_pay_date = ""
+        self.last_pay_amount = ""
+        self.status_tagihan_1 = ""
+        self.status_tagihan_2 = ""
+        self.status_tagihan_3 = ""
+        self.status_tagihan_4 = ""
+        self.status_tagihan_5 = ""
+        self.status_tagihan_6 = ""
+        self.status_tagihan_7 = ""
+        self.status_tagihan_8 = ""
+        self.status_tagihan_9 = ""
+        self.status_tagihan_10 = ""
+        self.status_tagihan_11 = ""
+        self.status_tagihan_12 = ""
+        self.status_tagihan_13 = ""
+        self.status_tagihan_14 = ""
+        self.status_tagihan_15 = ""
+        self.partner_name = ""
+        self.last_agent = ""
+        self.last_call_status = ""
+        self.refinancing_status = ""
+        self.activation_amount = ""
+        self.program_expiry_date = ""
+        self.customer_bucket_type = ""
+        self.promo_untuk_customer = ""
+        self.zipcode = ""
+        self.dpd = ""
+        self.bucket = ""
 
     @task
     def set_initial_data(self):
@@ -95,75 +152,75 @@ class OnboardingFeature(SequentialTaskSet):
     
     @task
     def intelix(self):
-        endpoint = "https://rnd.ecentrix.net/ecx_ws/"
+        endpoint = "/ecx_ws.php?function=add_queue"
         name_thread = "intelix - " + endpoint
         data = {
             "loan_id": self.loan_id,
-            "payment_id": (self.payment_id),
-            "account_id": (self.account_id),
-            "account_payment_id": (self.account_payment_id),
-            "is_j1": (self.is_j1),
-            "customer_id": (self.customer_id),
-            "application_id": (self.application_id),
-            "nama_customer": (self.nama_customer),
-            "mobile_phone_1": (self.mobile_phone_1),
-            "mobile_phone_2": (self.mobile_phone_2),
-            "nama_perusahaan": (self.nama_perusahaan),
-            "posisi_karyawan": (self.posisi_karyawan),
-            "telp_perusahaan": (self.telp_perusahaan),
-            "dpd": (self.dpd),
-            "angsuran_per_bulan": (self.angsuran_per_bulan),
-            "denda": (self.denda),
-            "outstanding": (self.outstanding),
-            "tanggal_jatuh_tempo": (self.tanggal_jatuh_tempo),
-            "nama_pasangan": (self.nama_pasangan),
-            "no_telp_pasangan": (self.no_telp_pasangan),
-            "nama_kerabat": (self.nama_kerabat),
-            "no_telp_kerabat": (self.no_telp_kerabat),
-            "hubungan_kerabat": (self.hubungan_kerabat),
-            "alamat": (self.alamat),
-            "kota": (self.kota),
-            "jenis_kelamin": (self.jenis_kelamin),
-            "tgl_lahir": (self.tgl_lahir),
-            "tgl_gajian": (self.tgl_gajian),
-            "tujuan_pinjaman": (self.tujuan_pinjaman),
-            "tgl_upload": (self.tgl_uploadv
-            "va_bca": (self.va_bca),
-            "va_permata": (self.va_permata),
-            "va_maybank": (self.va_maybank),
-            "va_alfamart": (self.va_alfamart),
-            "va_indomaret": (self.va_indomaret),
-            "campaign": (self.campaign),
-            "tipe_produk": (self.tipe_produk),
-            "jumlah_pinjaman": (self.jumlah_pinjaman),
-            "last_pay_date": (self.last_pay_date),
-            "last_pay_amount": (self.last_pay_amount),
-            "status_tagihan_1": (self.status_tagihan_1),
-            "status_tagihan_2": (self.status_tagihan_2),
-            "status_tagihan_3": (self.status_tagihan_3),
-            "status_tagihan_4": (self.status_tagihan_4),
-            "status_tagihan_5": (self.status_tagihan_5),
-            "status_tagihan_6": (self.status_tagihan_6),
-            "status_tagihan_7": (self.status_tagihan_7),
-            "status_tagihan_8": (self.status_tagihan_8),
-            "status_tagihan_9": (self.status_tagihan_9),
-            "status_tagihan_10": (self.status_tagihan_10),
-            "status_tagihan_11": (self.status_tagihan_11),
-            "status_tagihan_12": (self.status_tagihan_12),
-            "status_tagihan_13": (self.status_tagihan_13),
-            "status_tagihan_14": (self.status_tagihan_14),
-            "status_tagihan_15": (self.status_tagihan_15),
-            "partner_name": (self.partner_name),
-            "last_agent": (self.last_agent),
-            "last_call_status": (self.last_call_status),
-            "refinancing_status": (self.refinancing_status),
-            "activation_amount": (self.activation_amount),
-            "program_expiry_date": (self.program_expiry_date),
-            "customer_bucket_type": (self.customer_bucket_type),
-            "promo_untuk_customer": (self.promo_untuk_customer),
-            "zipcode": (self.zipcode),
-            "dpd": (self.dpd),
-            "bucket": (self.bucket)
+            "payment_id": self.payment_id,
+            "account_id": self.account_id,
+            "account_payment_id": self.account_payment_id,
+            "is_j1": self.is_j1,
+            "customer_id": self.customer_id,
+            "application_id": self.application_id,
+            "nama_customer": self.nama_customer,
+            "mobile_phone_1": self.mobile_phone_1,
+            "mobile_phone_2": self.mobile_phone_2,
+            "nama_perusahaan": self.nama_perusahaan,
+            "posisi_karyawan": self.posisi_karyawan,
+            "telp_perusahaan": self.telp_perusahaan,
+            "dpd": self.dpd,
+            "angsuran_per_bulan": self.angsuran_per_bulan,
+            "denda": self.denda,
+            "outstanding": self.outstanding,
+            "tanggal_jatuh_tempo": self.tanggal_jatuh_tempo,
+            "nama_pasangan": self.nama_pasangan,
+            "no_telp_pasangan": self.no_telp_pasangan,
+            "nama_kerabat": self.nama_kerabat,
+            "no_telp_kerabat": self.no_telp_kerabat,
+            "hubungan_kerabat": self.hubungan_kerabat,
+            "alamat": self.alamat,
+            "kota": self.kota,
+            "jenis_kelamin": self.jenis_kelamin,
+            "tgl_lahir": self.tgl_lahir,
+            "tgl_gajian": self.tgl_gajian,
+            "tujuan_pinjaman": self.tujuan_pinjaman,
+            "tgl_upload": self.tgl_upload,
+            "va_bca": self.va_bca,
+            "va_permata": self.va_permata,
+            "va_maybank": self.va_maybank,
+            "va_alfamart": self.va_alfamart,
+            "va_indomaret": self.va_indomaret,
+            "campaign": self.campaign,
+            "tipe_produk": self.tipe_produk,
+            "jumlah_pinjaman": self.jumlah_pinjaman,
+            "last_pay_date": self.last_pay_date,
+            "last_pay_amount": self.last_pay_amount,
+            "status_tagihan_1": self.status_tagihan_1,
+            "status_tagihan_2": self.status_tagihan_2,
+            "status_tagihan_3": self.status_tagihan_3,
+            "status_tagihan_4": self.status_tagihan_4,
+            "status_tagihan_5": self.status_tagihan_5,
+            "status_tagihan_6": self.status_tagihan_6,
+            "status_tagihan_7": self.status_tagihan_7,
+            "status_tagihan_8": self.status_tagihan_8,
+            "status_tagihan_9": self.status_tagihan_9,
+            "status_tagihan_10": self.status_tagihan_10,
+            "status_tagihan_11": self.status_tagihan_11,
+            "status_tagihan_12": self.status_tagihan_12,
+            "status_tagihan_13": self.status_tagihan_13,
+            "status_tagihan_14": self.status_tagihan_14,
+            "status_tagihan_15": self.status_tagihan_15,
+            "partner_name": self.partner_name,
+            "last_agent": self.last_agent,
+            "last_call_status": self.last_call_status,
+            "refinancing_status": self.refinancing_status,
+            "activation_amount": self.activation_amount,
+            "program_expiry_date": self.program_expiry_date,
+            "customer_bucket_type": self.customer_bucket_type,
+            "promo_untuk_customer": self.promo_untuk_customer,
+            "zipcode": self.zipcode,
+            "dpd": self.dpd,
+            "bucket": self.bucket
         }
 
         with self.client.post(
@@ -171,16 +228,23 @@ class OnboardingFeature(SequentialTaskSet):
             catch_response=True,
             name=name_thread,
             data=data,
+            headers={"Token": self.token},
         ) as response:
             if response.status_code == 200:
+                print(response.text)
                 response.success()
             else:
-                response.failure("Failure in check strong pin")
+                response.failure(response.text)
+
+    @task
+    def stop(self):
+        self.interrupt()
+        raise StopUser()
 
 class MySeqTest(FastHttpUser):
     wait_time = constant(1)
-    host = "https://api-staging.julofinance.com"
-    tasks = [OnboardingFeature]
+    host = "https://rnd.ecentrix.net/ecx_ws"
+    tasks = [IntelixFeature]
 
 # class StagesShape(LoadTestShape):
 #     stages = [
