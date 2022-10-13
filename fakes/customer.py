@@ -45,7 +45,7 @@ class Customer(object):
         self.dependent = 2
         self.spouse_name = "forgot"
         self.spouse_dob = None
-        self.spouse_has_whatsapp = None
+        self.spouse_has_whatsapp = False
         self.kin_name = "Kate Kane"
         self.kin_dob = None
         self.kin_gender = None

@@ -1,4 +1,4 @@
-from locust import task, constant, SequentialTaskSet, FastHttpUser, LoadTestShape, TaskSet, tag
+from locust import task, constant, SequentialTaskSet, FastHttpUser, LoadTestShape, TaskSet, tag, constant_throughput, constant_pacing
 from locust_plugins.csvreader import CSVReader
 from locust.exception import StopUser
 from json import JSONDecodeError
@@ -9,7 +9,7 @@ from fakes.customer import Customer as customers
 # Get data parameterization from CSV
 test_data = CSVReader("CSV_Data//registration_long_form.csv")
 
-class OnboardingFeature(SequentialTaskSet):
+class LongFormFeature(SequentialTaskSet):
     def __init__(self, parent):
         super().__init__(parent)
         self.token = ""
@@ -111,7 +111,7 @@ class OnboardingFeature(SequentialTaskSet):
                     token = response.json()["data"]["token"]
                     self.token = token
 
-                    application_id = response.json()["ata"]["applications"][0]["id"]
+                    application_id = response.json()["data"]["applications"][0]["id"]
                     self.application_id = application_id
 
                     device_id = response.json()["data"]["device_id"]
@@ -236,12 +236,12 @@ class OnboardingFeature(SequentialTaskSet):
     @tag('x100')
     @task
     def check_payslip_mandatory(self):
-        endpoint = "/api/v2/mobile/check-payslip-mandatory/" + self.application_id
+        endpoint = "/api/v2/mobile/check-payslip-mandatory/"
 
         name_thread = "Get payslip mandatory - " + endpoint
 
         with self.client.get(
-            endpoint,
+            endpoint + str(self.application_id),
             catch_response=True,
             name=name_thread,
             headers={"authorization": "Token " + self.token},
@@ -269,23 +269,23 @@ class OnboardingFeature(SequentialTaskSet):
             else:
                 response.failure(response.text)
 
-    @tag('x100')
-    @task
-    def liveness_detection_pre_active_check(self):
-        endpoint = "/api/liveness-detection/v1/pre-active-check"
+    # @tag('x100')
+    # @task
+    # def liveness_detection_pre_active_check(self):
+    #     endpoint = "/api/liveness-detection/v1/pre-active-check"
 
-        name_thread = "Liveness detection pre active check - " + endpoint
+    #     name_thread = "Liveness detection pre active check - " + endpoint
 
-        with self.client.post(
-            endpoint,
-            catch_response=True,
-            name=name_thread,
-            headers={"authorization": "Token " + self.token},
-        ) as response:
-            if response.status_code == 200:
-                response.success()
-            else:
-                response.failure(response.text)
+    #     with self.client.post(
+    #         endpoint,
+    #         catch_response=True,
+    #         name=name_thread,
+    #         headers={"authorization": "Token " + self.token},
+    #     ) as response:
+    #         if response.status_code == 200:
+    #             response.success()
+    #         else:
+    #             response.failure(response.text)
 
     @tag('x100')
     @task
@@ -313,23 +313,23 @@ class OnboardingFeature(SequentialTaskSet):
             else:
                 response.failure("Failure in process upload scrape data")
 
-    @tag('x100')
-    @task
-    def get_setting_ocr_timeout(self):
-        endpoint = "/api/ocr/v2/setting/ocr_timeout"
+    # @tag('x100')
+    # @task
+    # def get_setting_ocr_timeout(self):
+    #     endpoint = "/api/ocr/v2/setting/ocr_timeout"
 
-        name_thread = "Get setting ocr timeout - " + endpoint
+    #     name_thread = "Get setting ocr timeout - " + endpoint
 
-        with self.client.post(
-            endpoint,
-            catch_response=True,
-            name=name_thread,
-            headers={"authorization": "Token " + self.token},
-        ) as response:
-            if response.status_code == 200:
-                response.success()
-            else:
-                response.failure(response.text)
+    #     with self.client.post(
+    #         endpoint,
+    #         catch_response=True,
+    #         name=name_thread,
+    #         headers={"authorization": "Token " + self.token},
+    #     ) as response:
+    #         if response.status_code == 200:
+    #             response.success()
+    #         else:
+    #             response.failure(response.text)
 
     @tag('x100')
     @task
@@ -451,12 +451,12 @@ class OnboardingFeature(SequentialTaskSet):
     @tag('x100')
     @task
     def get_url_image(self):
-        endpoint = "/api/application_flow/v1/get_application_image_url/?image_id=" + self.image_id
+        endpoint = "/api/application_flow/v1/get_application_image_url/?image_id="
 
         name_thread = "Get url image - " + endpoint
 
         with self.client.get(
-            endpoint,
+            endpoint + str(self.image_id),
             catch_response=True,
             name=name_thread,
             headers={"authorization": "Token " + self.token},
@@ -513,6 +513,7 @@ class OnboardingFeature(SequentialTaskSet):
             data=data,
             headers={"authorization": "Token " + self.token}
         ) as response:
+            print(f"response cities : {response.text}")
             try:
                 if response.status_code == 200:
                     response.success()
@@ -546,6 +547,7 @@ class OnboardingFeature(SequentialTaskSet):
             data=data,
             headers={"authorization": "Token " + self.token}
         ) as response:
+            print(f"response districts : {response.text}")
             try:
                 if response.status_code == 200:
                     response.success()
@@ -563,38 +565,38 @@ class OnboardingFeature(SequentialTaskSet):
             except KeyError:
                 response.failure("Response did not contain expected key")
 
-    @tag('x100')
-    @task
-    def get_address_subdistricts(self):
-        endpoint = "/api/v3/address/subdistricts"
+    # @tag('x100')
+    # @task
+    # def get_address_subdistricts(self):
+    #     endpoint = "/api/v3/address/subdistricts"
 
-        name_thread = "Get sub districts - " + endpoint
+    #     name_thread = "Get sub districts - " + endpoint
 
-        data = {"province": self.province, "city": self.city, "district": self.district}
+    #     data = {"province": self.province, "city": self.city, "district": self.district}
 
-        with self.client.post(
-            endpoint,
-            catch_response=True,
-            name=name_thread,
-            data=data,
-            headers={"authorization": "Token " + self.token}
-        ) as response:
-            try:
-                if response.status_code == 200:
-                    response.success()
+    #     with self.client.post(
+    #         endpoint,
+    #         catch_response=True,
+    #         name=name_thread,
+    #         data=data,
+    #         headers={"authorization": "Token " + self.token}
+    #     ) as response:
+    #         try:
+    #             if response.status_code == 200:
+    #                 response.success()
 
-                    sub_district = response.json()["data"]
-                    pick_random_sub_district = random.randint(0, len(sub_district) - 1)
-                    self.sub_district = pick_random_sub_district
+    #                 sub_district = response.json()["data"]
+    #                 pick_random_sub_district = random.randint(0, len(sub_district) - 1)
+    #                 self.sub_district = pick_random_sub_district
 
-                else:
-                    response.failure(response.text)
+    #             else:
+    #                 response.failure(response.text)
 
-            except JSONDecodeError:
-                response.failure("Response could not be decoded as JSON")
+    #         except JSONDecodeError:
+    #             response.failure("Response could not be decoded as JSON")
 
-            except KeyError:
-                response.failure("Response did not contain expected key")
+    #         except KeyError:
+    #             response.failure("Response did not contain expected key")
 
     @tag('x100')
     @task
@@ -617,7 +619,7 @@ class OnboardingFeature(SequentialTaskSet):
                 headers={"authorization": "Token " + self.token},
             ) as response:
 
-            if response.status_code == 201:
+            if response.status_code == 200:
                 response.success()
             else:
                 response.failure(response.text)
@@ -661,12 +663,12 @@ class OnboardingFeature(SequentialTaskSet):
     @tag('x100')
     @task
     def get_booster_status(self):
-        endpoint = "/api/v3/booster/status/" + self.application_id
+        endpoint = "/api/v3/booster/status/"
 
         name_thread = "Get booster status - " + endpoint
 
         with self.client.get(
-            endpoint,
+            endpoint + str(self.application_id),
             catch_response=True,
             name=name_thread,
             headers={"authorization": "Token " + self.token},
@@ -697,18 +699,19 @@ class OnboardingFeature(SequentialTaskSet):
     @tag('x105')
     @task
     def j1_form_submission(self):
-        endpoint = "/api/v3/application/{}/".format(self.application_id)
+        endpoint = "/api/v3/application/"
 
         name_thread = "Form Submission - " + endpoint
 
         form_submission_data = customers().generate_form_submission_params(device_id=self.device_id)
 
-        with self.client.patch(endpoint,
-                catch_response=True, 
-                name=name_thread, 
-                data=form_submission_data,
-                headers={"authorization": "Token " + self.token},
-            ) as response:
+        with self.client.patch(
+            endpoint + str(self.application_id),
+            catch_response=True, 
+            name=name_thread, 
+            data=form_submission_data,
+            headers={"authorization": "Token " + self.token},
+        ) as response:
 
             if response.status_code == 200:
                 response.success()
@@ -718,12 +721,12 @@ class OnboardingFeature(SequentialTaskSet):
     @tag('x105')
     @task
     def clcs_scrape_check(self):
-        endpoint = "/api/v2/etl/clcs-scraped-checking/{}".format(self.application_id)
+        endpoint = "/api/v2/etl/clcs-scraped-checking/"
 
         name_thread = "Clcs scraped checking - " + endpoint
 
         with self.client.get(
-            endpoint,
+            endpoint + str(self.application_id),
             catch_response=True,
             name=name_thread,
             headers={"authorization": "Token " + self.token},
@@ -769,40 +772,46 @@ class OnboardingFeature(SequentialTaskSet):
             else:
                 response.failure(response.text)
 
+    # @task
+    # def stop(self):
+    #     raise StopUser()
+
 class MySeqTest(FastHttpUser):
+    # wait_time = constant_throughput(5)
+    # wait_time = constant_pacing(5)
     wait_time = constant(1)
     host = "https://api-staging.julofinance.com"
-    tasks = [OnboardingFeature]
+    tasks = [LongFormFeature]
 
-# class StagesShape(LoadTestShape):
-#     stages = [
-#         #### Load Test ####
-#         {"duration": 60, "users": 35, "spawn_rate": 5}, # simulate ramp-up of traffic to 50 users over 25 seconds.
-#         {"duration": 75, "users": 10, "spawn_rate": 5}, # simulate ramp-up of traffic to 50 users over 25 seconds.
-#         {"duration": 85, "users": 1, "spawn_rate": 1}, # stay at 50 users for around 15 seconds
+class StagesShape(LoadTestShape):
+    stages = [
+        #### Load Test ####
+        {"duration": 60, "users": 5, "spawn_rate": 5}, # simulate ramp-up of traffic to 50 users over 25 seconds.
+        {"duration": 220, "users": 10, "spawn_rate": 10}, # simulate ramp-up of traffic to 50 users over 25 seconds.
+        {"duration": 300, "users": 1, "spawn_rate": 1}, # stay at 50 users for around 15 seconds
 
-#         #### Stress Test ####
-#         # {"duration": 25, "users": 1, "spawn_rate": 1}, # simulate ramp-up of traffic to 50 users over 15 seconds. (normal load)
-#         # {"duration": 40, "users": 5, "spawn_rate": 1}, # stay at 50 users for around 20 seconds
-#         # {"duration": 45, "users": 75, "spawn_rate": 20}, # ramp-up to 60 users around 15 seconds (beyond the breaking point)
-#         # {"duration": 60, "users": 30, "spawn_rate": 10}, # ramp-down
-#         # {"duration": 75, "users": 10, "spawn_rate": 10}, # ramp-down
-#         # {"duration": 90, "users": 1, "spawn_rate": 1} # ramp-down to 1 users
+        #### Stress Test ####
+        # {"duration": 25, "users": 1, "spawn_rate": 1}, # simulate ramp-up of traffic to 50 users over 15 seconds. (normal load)
+        # {"duration": 40, "users": 5, "spawn_rate": 1}, # stay at 50 users for around 20 seconds
+        # {"duration": 45, "users": 75, "spawn_rate": 20}, # ramp-up to 60 users around 15 seconds (beyond the breaking point)
+        # {"duration": 60, "users": 30, "spawn_rate": 10}, # ramp-down
+        # {"duration": 75, "users": 10, "spawn_rate": 10}, # ramp-down
+        # {"duration": 90, "users": 1, "spawn_rate": 1} # ramp-down to 1 users
         
-#         #### Spike Test ####
-#         # {"duration": 10, "users": 20, "spawn_rate": 5}, # simulate ramp-up of traffic to 20 users over 10 seconds. (normal load)
-#         # {"duration": 35, "users": 100, "spawn_rate": 100}, # stay at 100 users for around 10 seconds
-#         # {"duration": 45, "users": 20, "spawn_rate": 20}, # ramp-down to 50 users around 20 seconds (recovery)
-#         # {"duration": 55, "users": 10, "spawn_rate": 10}, # ramp-down
-#         # {"duration": 65, "users": 1, "spawn_rate": 1} # ramp-down to 1 users
-#     ]
+        #### Spike Test ####
+        # {"duration": 10, "users": 20, "spawn_rate": 5}, # simulate ramp-up of traffic to 20 users over 10 seconds. (normal load)
+        # {"duration": 35, "users": 100, "spawn_rate": 100}, # stay at 100 users for around 10 seconds
+        # {"duration": 45, "users": 20, "spawn_rate": 20}, # ramp-down to 50 users around 20 seconds (recovery)
+        # {"duration": 55, "users": 10, "spawn_rate": 10}, # ramp-down
+        # {"duration": 65, "users": 1, "spawn_rate": 1} # ramp-down to 1 users
+    ]
 
-#     def tick(self):
-#         run_time = self.get_run_time()
+    def tick(self):
+        run_time = self.get_run_time()
 
-#         for stage in self.stages:
-#             if run_time < stage["duration"]:
-#                 tick_data = (stage["users"], stage["spawn_rate"])
-#                 return tick_data
+        for stage in self.stages:
+            if run_time < stage["duration"]:
+                tick_data = (stage["users"], stage["spawn_rate"])
+                return tick_data
 
-#         return None
+        return None
