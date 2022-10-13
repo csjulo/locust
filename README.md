@@ -49,7 +49,6 @@ In the class you also have access to the <b><i>get_run_time()</b></i> method, fo
 ```bash
 class StagesShape(LoadTestShape):
     stages = [
-        #### Load Test ####
         {"duration": 60, "users": 5, "spawn_rate": 5}, 
         {"duration": 220, "users": 10, "spawn_rate": 10}, 
         {"duration": 300, "users": 1, "spawn_rate": 1},
