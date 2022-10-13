@@ -35,6 +35,7 @@ locust -f /path/to/your/test/case/file --headless -u xxx -r xxx
 
 # Common options that can be used while run the test using command line (headless)
 * `--tags` : List of tags to include in the test, so only tasks with any matching tags will be executed
+
 <b><ins>Example</ins></b>:
 
 ```bash
@@ -42,6 +43,7 @@ locust -f /path/to/your/test/case/file --headless -u xxx -r xxx --tags specific_
 ```
 
 * `--csv xxx.csv --csv-full-history` : Store current request stats to files in CSV format.
+
 <b><ins>Example</ins></b>:
 
 ```bash
@@ -49,6 +51,7 @@ locust -f /path/to/your/test/case/file --headless -u xxx -r xxx --csv Test.csv -
 ```
 
 * `--html xxx.html` : Store HTML report to file path specified.
+
 <b><ins>Example</ins></b>:
 
 ```bash
